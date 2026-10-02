@@ -137,6 +137,7 @@
       background: #f5f5f5;
       line-height: 1.5;
       min-height: 45px;
+      white-space: pre-wrap;
     }
 
     footer {
@@ -239,6 +240,7 @@
       <button
         id="opportunityButton"
         class="gold"
+        disabled
       >
         Explore Opportunities
       </button>
@@ -247,7 +249,7 @@
         id="opportunityStatus"
         class="message-box"
       >
-        Business opportunity ideas will appear here.
+        Identify an item first.
       </div>
 
     </section>
@@ -269,6 +271,7 @@
       <button
         id="marketButton"
         class="green"
+        disabled
       >
         Explore Markets
       </button>
@@ -277,7 +280,7 @@
         id="marketStatus"
         class="message-box"
       >
-        Market information will appear here.
+        Identify an item first.
       </div>
 
     </section>
@@ -337,14 +340,19 @@
 
   <script>
 
+    "use strict";
+
+
     /* =========================================
-       ARIA SME HUB
-       80/20 CORE JAVASCRIPT
+       GOOGLE APPS SCRIPT BACKEND
     ========================================= */
 
+    const ARIA_BACKEND_URL =
+      "https://script.google.com/macros/s/AKfycbz3WqbHajSKjI-1l7tWgVWsfmHQkWzsf-VXCbyM0xHqJXvZKyrUH829oaij69QwiGigFg/exec";
+
 
     /* =========================================
-       IMAGE SCANNER
+       PAGE ELEMENTS
     ========================================= */
 
     const imageInput =
@@ -359,55 +367,384 @@
     const status =
       document.getElementById("status");
 
+    const opportunityButton =
+      document.getElementById("opportunityButton");
+
+    const opportunityStatus =
+      document.getElementById("opportunityStatus");
+
+    const marketButton =
+      document.getElementById("marketButton");
+
+    const marketStatus =
+      document.getElementById("marketStatus");
+
+    const chatInput =
+      document.getElementById("chatInput");
+
+    const chatButton =
+      document.getElementById("chatButton");
+
+    const chatStatus =
+      document.getElementById("chatStatus");
+
+
+    /* =========================================
+       ARIA MEMORY
+    ========================================= */
+
+    let selectedImageBase64 = "";
+
+    let selectedImageMimeType = "";
+
+    let identifiedItem = "";
+
+
+    /* =========================================
+       SEND REQUEST TO ARIA BACKEND
+    ========================================= */
+
+    async function sendToAria(data) {
+
+      const response =
+        await fetch(
+          ARIA_BACKEND_URL,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "text/plain;charset=utf-8"
+            },
+
+            body: JSON.stringify(data)
+          }
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Backend request failed."
+        );
+      }
+
+      return await response.json();
+    }
+
+
+    /* =========================================
+       PREPARE IMAGE
+    ========================================= */
+
+    function prepareImage(file) {
+
+      return new Promise(
+        function(resolve, reject) {
+
+          const reader =
+            new FileReader();
+
+          reader.onload =
+            function(event) {
+
+              const img =
+                new Image();
+
+              img.onload =
+                function() {
+
+                  const maxSize = 1280;
+
+                  let width =
+                    img.width;
+
+                  let height =
+                    img.height;
+
+
+                  if (
+                    width > maxSize ||
+                    height > maxSize
+                  ) {
+
+                    if (width > height) {
+
+                      height =
+                        Math.round(
+                          height *
+                          maxSize /
+                          width
+                        );
+
+                      width =
+                        maxSize;
+
+                    } else {
+
+                      width =
+                        Math.round(
+                          width *
+                          maxSize /
+                          height
+                        );
+
+                      height =
+                        maxSize;
+                    }
+                  }
+
+
+                  const canvas =
+                    document.createElement(
+                      "canvas"
+                    );
+
+                  canvas.width =
+                    width;
+
+                  canvas.height =
+                    height;
+
+
+                  const context =
+                    canvas.getContext(
+                      "2d"
+                    );
+
+                  context.drawImage(
+                    img,
+                    0,
+                    0,
+                    width,
+                    height
+                  );
+
+
+                  const dataUrl =
+                    canvas.toDataURL(
+                      "image/jpeg",
+                      0.80
+                    );
+
+
+                  const base64 =
+                    dataUrl.split(",")[1];
+
+
+                  resolve({
+                    dataUrl:
+                      dataUrl,
+
+                    base64:
+                      base64,
+
+                    mimeType:
+                      "image/jpeg"
+                  });
+
+                };
+
+
+              img.onerror =
+                function() {
+
+                  reject(
+                    new Error(
+                      "The image could not be loaded."
+                    )
+                  );
+
+                };
+
+
+              img.src =
+                event.target.result;
+
+            };
+
+
+          reader.onerror =
+            function() {
+
+              reject(
+                new Error(
+                  "The image could not be read."
+                )
+              );
+
+            };
+
+
+          reader.readAsDataURL(file);
+
+        }
+      );
+    }
+
+
+    /* =========================================
+       IMAGE SELECTED
+    ========================================= */
 
     imageInput.addEventListener(
       "change",
-      function () {
+      async function() {
 
         const file =
           imageInput.files[0];
+
 
         if (!file) {
           return;
         }
 
 
-        if (!file.type.startsWith("image/")) {
+        if (
+          !file.type.startsWith(
+            "image/"
+          )
+        ) {
 
           status.textContent =
             "Please choose a valid image.";
 
-          identifyButton.disabled = true;
+          identifyButton.disabled =
+            true;
 
           return;
         }
 
 
-        const imageUrl =
-          URL.createObjectURL(file);
+        try {
 
-        preview.src =
-          imageUrl;
+          status.textContent =
+            "Preparing your image...";
 
-        preview.style.display =
-          "block";
 
-        identifyButton.disabled =
-          false;
+          const prepared =
+            await prepareImage(file);
 
-        status.textContent =
-          "Image selected. Ready for AI identification.";
+
+          selectedImageBase64 =
+            prepared.base64;
+
+          selectedImageMimeType =
+            prepared.mimeType;
+
+
+          preview.src =
+            prepared.dataUrl;
+
+          preview.style.display =
+            "block";
+
+
+          identifyButton.disabled =
+            false;
+
+
+          status.textContent =
+            "Image ready. Tap Identify Item.";
+
+        } catch (error) {
+
+          console.error(error);
+
+          status.textContent =
+            "Could not prepare the image.";
+
+          identifyButton.disabled =
+            true;
+        }
 
       }
     );
 
 
+    /* =========================================
+       IDENTIFY ITEM
+    ========================================= */
+
     identifyButton.addEventListener(
       "click",
-      function () {
+      async function() {
+
+        if (!selectedImageBase64) {
+
+          status.textContent =
+            "Please choose an image first.";
+
+          return;
+        }
+
+
+        identifyButton.disabled =
+          true;
+
+        opportunityButton.disabled =
+          true;
+
+        marketButton.disabled =
+          true;
+
 
         status.textContent =
-          "Image received. AI identification will be connected next.";
+          "ARIA is analysing your image...";
+
+
+        try {
+
+          const result =
+            await sendToAria({
+
+              action:
+                "identify",
+
+              image:
+                selectedImageBase64,
+
+              mimeType:
+                selectedImageMimeType
+
+            });
+
+
+          if (result.success) {
+
+            identifiedItem =
+              result.answer;
+
+
+            status.textContent =
+              result.answer;
+
+
+            opportunityButton.disabled =
+              false;
+
+            marketButton.disabled =
+              false;
+
+          } else {
+
+            status.textContent =
+              result.message ||
+              "ARIA could not identify the item.";
+          }
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          status.textContent =
+            "Connection error. Please try again.";
+
+        } finally {
+
+          identifyButton.disabled =
+            false;
+        }
 
       }
     );
@@ -417,49 +754,149 @@
        BUSINESS OPPORTUNITIES
     ========================================= */
 
-    const opportunityButton =
-      document.getElementById(
-        "opportunityButton"
-      );
-
-    const opportunityStatus =
-      document.getElementById(
-        "opportunityStatus"
-      );
-
-
     opportunityButton.addEventListener(
       "click",
-      function () {
+      async function() {
+
+        if (!identifiedItem) {
+
+          opportunityStatus.textContent =
+            "Identify an item first.";
+
+          return;
+        }
+
+
+        opportunityButton.disabled =
+          true;
+
 
         opportunityStatus.textContent =
-          "ARIA will generate practical business opportunities from your item.";
+          "ARIA is finding business opportunities...";
+
+
+        try {
+
+          const result =
+            await sendToAria({
+
+              action:
+                "chat",
+
+              message:
+                "Based on this identified item:\n\n" +
+                identifiedItem +
+                "\n\n" +
+                "Give me 5 practical and realistic " +
+                "small business opportunities in " +
+                "Papua New Guinea using this item. " +
+                "Keep the ideas affordable and simple " +
+                "for an ordinary person to start."
+
+            });
+
+
+          if (result.success) {
+
+            opportunityStatus.textContent =
+              result.answer;
+
+          } else {
+
+            opportunityStatus.textContent =
+              result.message ||
+              "ARIA could not generate opportunities.";
+          }
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          opportunityStatus.textContent =
+            "Connection error. Please try again.";
+
+        } finally {
+
+          opportunityButton.disabled =
+            false;
+        }
 
       }
     );
 
 
     /* =========================================
-       MARKETS
+       FIND MARKETS
     ========================================= */
-
-    const marketButton =
-      document.getElementById(
-        "marketButton"
-      );
-
-    const marketStatus =
-      document.getElementById(
-        "marketStatus"
-      );
-
 
     marketButton.addEventListener(
       "click",
-      function () {
+      async function() {
+
+        if (!identifiedItem) {
+
+          marketStatus.textContent =
+            "Identify an item first.";
+
+          return;
+        }
+
+
+        marketButton.disabled =
+          true;
+
 
         marketStatus.textContent =
-          "ARIA will help identify possible customers, selling channels and markets.";
+          "ARIA is looking at possible markets...";
+
+
+        try {
+
+          const result =
+            await sendToAria({
+
+              action:
+                "chat",
+
+              message:
+                "Based on this identified item:\n\n" +
+                identifiedItem +
+                "\n\n" +
+                "Explain practical ways to sell this " +
+                "item in Papua New Guinea. Include " +
+                "possible customers, places to sell, " +
+                "online options and possible larger " +
+                "markets if appropriate."
+
+            });
+
+
+          if (result.success) {
+
+            marketStatus.textContent =
+              result.answer;
+
+          } else {
+
+            marketStatus.textContent =
+              result.message ||
+              "ARIA could not find market ideas.";
+          }
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          marketStatus.textContent =
+            "Connection error. Please try again.";
+
+        } finally {
+
+          marketButton.disabled =
+            false;
+        }
 
       }
     );
@@ -469,52 +906,105 @@
        TALK TO ARIA
     ========================================= */
 
-    const chatInput =
-      document.getElementById(
-        "chatInput"
-      );
+    async function askAria() {
 
-    const chatButton =
-      document.getElementById(
-        "chatButton"
-      );
+      const message =
+        chatInput.value.trim();
 
-    const chatStatus =
-      document.getElementById(
-        "chatStatus"
-      );
+
+      if (!message) {
+
+        chatStatus.textContent =
+          "Please type a question first.";
+
+        return;
+      }
+
+
+      chatButton.disabled =
+        true;
+
+
+      chatStatus.textContent =
+        "ARIA is thinking...";
+
+
+      try {
+
+        const result =
+          await sendToAria({
+
+            action:
+              "chat",
+
+            message:
+              message
+
+          });
+
+
+        if (result.success) {
+
+          chatStatus.textContent =
+            result.answer;
+
+        } else {
+
+          chatStatus.textContent =
+            result.message ||
+            "ARIA could not answer.";
+        }
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        chatStatus.textContent =
+          "Connection error. Please try again.";
+
+      } finally {
+
+        chatButton.disabled =
+          false;
+      }
+    }
 
 
     chatButton.addEventListener(
       "click",
-      function () {
-
-        const message =
-          chatInput.value.trim();
+      askAria
+    );
 
 
-        if (!message) {
+    /* =========================================
+       ENTER KEY FOR CHAT
+    ========================================= */
 
-          chatStatus.textContent =
-            "Please type a question first.";
+    chatInput.addEventListener(
+      "keydown",
+      function(event) {
 
-          return;
+        if (
+          event.key === "Enter" &&
+          !event.shiftKey
+        ) {
+
+          event.preventDefault();
+
+          askAria();
         }
-
-
-        chatStatus.textContent =
-          "Your question is ready for the ARIA AI connection.";
 
       }
     );
 
 
     /* =========================================
-       START
+       STARTUP
     ========================================= */
 
     console.log(
-      "ARIA SME HUB 80/20 version loaded."
+      "ARIA SME HUB AI connection loaded."
     );
 
   </script>
