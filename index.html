@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#dff3ff">
+  <meta name="description" content="ARIA SME HUB - Discover business opportunities in Papua New Guinea.">
+  <title>ARIA SME HUB</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #dff3ff;
+      color: #111111;
+    }
+
+    header {
+      background: #ffffff;
+      padding: 18px 16px;
+      text-align: center;
+      border-bottom: 4px solid #f2c94c;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: #075985;
+      font-size: 15px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 720px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 18px 5px 22px;
+    }
+
+    .hero h2 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 2px solid #f2c94c;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 21px;
+    }
+
+    .card p {
+      line-height: 1.55;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 10px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: #1683bd;
+      color: #ffffff;
+    }
+
+    .gold {
+      background: #f2c94c;
+      color: #111111;
+    }
+
+    .green {
+      background: #24834d;
+      color: #ffffff;
+    }
+
+    input[type="file"],
+    input[type="text"] {
+      width: 100%;
+      padding: 13px;
+      margin-top: 10px;
+      border: 1px solid #bbbbbb;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #ffffff;
+    }
+
+    #preview {
+      width: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-top: 14px;
+      display: none;
+      background: #f5f5f5;
+    }
+
+    .message-box {
+      margin-top: 12px;
+      padding: 13px;
+      border-radius: 10px;
+      background: #f5f5f5;
+      line-height: 1.5;
+      min-height: 45px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      color: #075985;
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 14px;
+      }
+
+      .hero h2 {
+        font-size: 26px;
+      }
+
+      .card {
+        padding: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>ARIA SME HUB</h1>
+    <p>Discover. Create. Grow.</p>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <h2>Turn what you have into opportunities.</h2>
+
+      <p>
+        Use ARIA to discover business ideas, possible markets
+        and income opportunities from resources around you.
+      </p>
+    </section>
+
+
+    <!-- ================================
+         1. SCAN AN ITEM
+    ================================= -->
+
+    <section class="card">
+
+      <h3>📷 1. Scan an Item</h3>
+
+      <p>
+        Take a photo or choose an image of something
+        you have.
+      </p>
+
+      <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+        capture="environment"
+      >
+
+      <img
+        id="preview"
+        alt="Selected item"
+      >
+
+      <button
+        id="identifyButton"
+        class="primary"
+        disabled
+      >
+        Identify Item
+      </button>
+
+      <div
+        id="status"
+        class="message-box"
+      >
+        Select an image to begin.
+      </div>
+
+    </section>
+
+
+    <!-- ================================
+         2. BUSINESS OPPORTUNITIES
+    ================================= -->
+
+    <section class="card">
+
+      <h3>💡 2. Business Opportunities</h3>
+
+      <p>
+        ARIA will suggest practical ways to turn
+        available resources into possible income.
+      </p>
+
+      <button
+        id="opportunityButton"
+        class="gold"
+      >
+        Explore Opportunities
+      </button>
+
+      <div
+        id="opportunityStatus"
+        class="message-box"
+      >
+        Business opportunity ideas will appear here.
+      </div>
+
+    </section>
+
+
+    <!-- ================================
+         3. MARKETS
+    ================================= -->
+
+    <section class="card">
+
+      <h3>🛒 3. Find Markets</h3>
+
+      <p>
+        Explore possible customers, selling channels
+        and markets for your products.
+      </p>
+
+      <button
+        id="marketButton"
+        class="green"
+      >
+        Explore Markets
+      </button>
+
+      <div
+        id="marketStatus"
+        class="message-box"
+      >
+        Market information will appear here.
+      </div>
+
+    </section>
+
+
+    <!-- ================================
+         4. TALK TO ARIA
+    ================================= -->
+
+    <section class="card">
+
+      <h3>🤖 4. Talk to Aria</h3>
+
+      <p>
+        Ask Aria about business ideas, products,
+        customers and opportunities.
+      </p>
+
+      <input
+        type="text"
+        id="chatInput"
+        placeholder="Ask Aria a question..."
+        autocomplete="off"
+      >
+
+      <button
+        id="chatButton"
+        class="primary"
+      >
+        Talk to Aria
+      </button>
+
+      <div
+        id="chatStatus"
+        class="message-box"
+      >
+        Aria is ready.
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    <p>
+      <strong>ARIA SME HUB</strong>
+    </p>
+
+    <p>
+      Empowering Papua New Guinea entrepreneurs.
+    </p>
+
+  </footer>
+
+
+  <script>
+
+    /* =========================================
+       ARIA SME HUB
+       80/20 CORE JAVASCRIPT
+    ========================================= */
+
+
+    /* =========================================
+       IMAGE SCANNER
+    ========================================= */
+
+    const imageInput =
+      document.getElementById("imageInput");
+
+    const preview =
+      document.getElementById("preview");
+
+    const identifyButton =
+      document.getElementById("identifyButton");
+
+    const status =
+      document.getElementById("status");
+
+
+    imageInput.addEventListener(
+      "change",
+      function () {
+
+        const file =
+          imageInput.files[0];
+
+        if (!file) {
+          return;
+        }
+
+
+        if (!file.type.startsWith("image/")) {
+
+          status.textContent =
+            "Please choose a valid image.";
+
+          identifyButton.disabled = true;
+
+          return;
+        }
+
+
+        const imageUrl =
+          URL.createObjectURL(file);
+
+        preview.src =
+          imageUrl;
+
+        preview.style.display =
+          "block";
+
+        identifyButton.disabled =
+          false;
+
+        status.textContent =
+          "Image selected. Ready for AI identification.";
+
+      }
+    );
+
+
+    identifyButton.addEventListener(
+      "click",
+      function () {
+
+        status.textContent =
+          "Image received. AI identification will be connected next.";
+
+      }
+    );
+
+
+    /* =========================================
+       BUSINESS OPPORTUNITIES
+    ========================================= */
+
+    const opportunityButton =
+      document.getElementById(
+        "opportunityButton"
+      );
+
+    const opportunityStatus =
+      document.getElementById(
+        "opportunityStatus"
+      );
+
+
+    opportunityButton.addEventListener(
+      "click",
+      function () {
+
+        opportunityStatus.textContent =
+          "ARIA will generate practical business opportunities from your item.";
+
+      }
+    );
+
+
+    /* =========================================
+       MARKETS
+    ========================================= */
+
+    const marketButton =
+      document.getElementById(
+        "marketButton"
+      );
+
+    const marketStatus =
+      document.getElementById(
+        "marketStatus"
+      );
+
+
+    marketButton.addEventListener(
+      "click",
+      function () {
+
+        marketStatus.textContent =
+          "ARIA will help identify possible customers, selling channels and markets.";
+
+      }
+    );
+
+
+    /* =========================================
+       TALK TO ARIA
+    ========================================= */
+
+    const chatInput =
+      document.getElementById(
+        "chatInput"
+      );
+
+    const chatButton =
+      document.getElementById(
+        "chatButton"
+      );
+
+    const chatStatus =
+      document.getElementById(
+        "chatStatus"
+      );
+
+
+    chatButton.addEventListener(
+      "click",
+      function () {
+
+        const message =
+          chatInput.value.trim();
+
+
+        if (!message) {
+
+          chatStatus.textContent =
+            "Please type a question first.";
+
+          return;
+        }
+
+
+        chatStatus.textContent =
+          "Your question is ready for the ARIA AI connection.";
+
+      }
+    );
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    console.log(
+      "ARIA SME HUB 80/20 version loaded."
+    );
+
+  </script>
+
+</body>
+</html>
